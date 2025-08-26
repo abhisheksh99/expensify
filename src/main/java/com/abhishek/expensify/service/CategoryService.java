@@ -57,6 +57,7 @@ public class CategoryService {
 
     }
 
+    // Update Categories
     public CategoryDto updateCategory(Long categoryId, CategoryDto dto) {
         ProfileEntity profile = profileService.getCurrentProfile();
         CategoryEntity existingCategory = categoryRepository.findByIdAndProfileId(categoryId,profile.getId()).orElseThrow(
@@ -67,7 +68,6 @@ public class CategoryService {
         existingCategory.setType(dto.getType());
         existingCategory = categoryRepository.save(existingCategory);
         return toDto(existingCategory);
-
 
     }
 
