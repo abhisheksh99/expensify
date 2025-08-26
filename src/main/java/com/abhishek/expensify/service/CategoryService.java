@@ -64,14 +64,12 @@ public class CategoryService {
         );
         existingCategory.setName(dto.getName());
         existingCategory.setIcon(dto.getIcon());
+        existingCategory.setType(dto.getType());
         existingCategory = categoryRepository.save(existingCategory);
         return toDto(existingCategory);
 
 
     }
-
-
-
 
     // Helper methods
     private CategoryEntity toEntity(CategoryDto categoryDto, ProfileEntity profileEntity) {
