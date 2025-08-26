@@ -1,4 +1,4 @@
-package com.abhishek.expensify.controller;
+package com.abhishek.expensify.config;
 
 import com.abhishek.expensify.security.JwtRequestFilter;
 import com.abhishek.expensify.service.AppUserDetailsService;
