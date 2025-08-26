@@ -9,6 +9,7 @@ import com.abhishek.expensify.repository.IncomeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,8 +21,7 @@ public class IncomeService {
     private final CategoryRepository categoryRepository;
     private final ProfileService profileService;
 
-    // ✅ Add new income
-    public IncomeDto addIncome(IncomeDto dto) {
+    public IncomeDto addIncome(IncomeDto dto){
         ProfileEntity profile = profileService.getCurrentProfile();
         CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -31,7 +31,6 @@ public class IncomeService {
         return toDto(newIncome);
     }
 
-    // ✅ Get current month incomes for current user
     public List<IncomeDto> getCurrentMonthIncomesForCurrentUser() {
         ProfileEntity profile = profileService.getCurrentProfile();
         LocalDate now = LocalDate.now();
@@ -47,19 +46,31 @@ public class IncomeService {
                 .toList();
     }
 
-    // ✅ Delete income by id
-    public void deleteIncome(Long incomeId) {
+    public void deleteIncome(Long incomeId){
         ProfileEntity profile = profileService.getCurrentProfile();
         IncomeEntity entity = incomeRepository.findById(incomeId).orElseThrow(
                 () -> new RuntimeException("Income not found")
         );
-        if (!entity.getProfile().getId().equals(profile.getId())) {
+        if(!entity.getProfile().getId().equals(profile.getId())){
             throw new RuntimeException("Unauthorized to delete this income");
         }
         incomeRepository.delete(entity);
     }
 
-    // 🔹 Helper methods
+    // ✅ New Methods
+    public List<IncomeDto> getLatest5IncomesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        List<IncomeEntity> list = incomeRepository.findTop5ByProfileIdOrderByDateDesc(profile.getId());
+        return list.stream().map(this::toDto).toList();
+    }
+
+    public BigDecimal getTotalIncomeForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        BigDecimal total = incomeRepository.findTotalIncomeByProfileId(profile.getId());
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    // Helper methods
     private IncomeEntity toEntity(IncomeDto dto, ProfileEntity profile, CategoryEntity category) {
         return IncomeEntity.builder()
                 .name(dto.getName())
@@ -71,7 +82,7 @@ public class IncomeService {
                 .build();
     }
 
-    private IncomeDto toDto(IncomeEntity entity) {
+    private IncomeDto toDto(IncomeEntity entity){
         return IncomeDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
