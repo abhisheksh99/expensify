@@ -7,7 +7,9 @@ import com.abhishek.expensify.entity.ProfileEntity;
 import com.abhishek.expensify.repository.CategoryRepository;
 import com.abhishek.expensify.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,6 +76,14 @@ public class ExpenseService {
         ProfileEntity profile =profileService.getCurrentProfile();
         BigDecimal total = expenseRepository.findTotalExpenseByProfileId(profile.getId());
         return total !=null ? total : BigDecimal.ZERO;
+
+    }
+
+    //Filter Expenses
+    public List<ExpenseDto> filterExpenses(LocalDate startDate, LocalDate endDate , String keyword, Sort sort) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        List<ExpenseEntity> list = expenseRepository.findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(profile.getId(),startDate,endDate,keyword,sort);
+        return list.stream().map(this::toDto).toList();
 
     }
 
