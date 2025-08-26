@@ -13,11 +13,16 @@ import java.util.UUID;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final EmailService emailService;
 
     public ProfileDto registerProfile(ProfileDto profileDto){
         ProfileEntity newProfile = toEntity(profileDto);
         newProfile.setActivationToken(UUID.randomUUID().toString());
         newProfile = profileRepository.save(newProfile);
+        String activationLink = "http://localhost:8080/api/v1.0/activate?token=" + newProfile.getActivationToken();
+        String subject = "Activate your Expensify account";
+        String body = "Click on the following link to activate your account: " + activationLink;
+        emailService.sendEmail(newProfile.getEmail(),subject,body);
         return toDto(newProfile);
     }
 
@@ -44,6 +49,17 @@ public class ProfileService {
                 .updatedAt(profileEntity.getUpdatedAt())
                 .build();
     }
+
+    public boolean activateProfile(String activationToken) {
+        return profileRepository.findByActivationToken(activationToken)
+                .map(profile -> {
+                    profile.setIsActive(true);
+                    profileRepository.save(profile);
+                    return true;
+                })
+                .orElse(false);
+    }
+
 
 
 }
